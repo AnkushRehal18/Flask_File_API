@@ -67,12 +67,3 @@ The API will be available at `http://127.0.0.1:5000/` by default.
 
 ---
 
-## Notes
-
-- Add a `.gitignore` file and include the `venv/` folder to avoid committing your virtual environment.
-- Make sure your `requirements.txt` is up to date with all dependencies.
-- Document your API endpoints here for users to understand how to interact with your service.
-
----
-
-Feel free to customize this file as needed!
