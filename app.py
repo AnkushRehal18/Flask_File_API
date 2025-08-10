@@ -1,15 +1,12 @@
 # app.py
 from flask import Flask, request, jsonify, send_file, after_this_request
-from utils.wordToPdf import convert_word_to_pdf
+from helpers.wordToPdf import convert_word_to_pdf
 from utils.clearUploadFolder import clearUploadFolder
+from helpers.PdfToWord import convert_pdf_to_word
 import threading
-import time
+import os
 
 app = Flask(__name__)
-
-@app.route("/")
-def home():
-    return "Flask is working! 🚀"
 
 @app.route('/wordToPdf', methods=['POST'])
 def convertToPdf():
@@ -23,6 +20,33 @@ def convertToPdf():
     threading.Thread(target=clearUploadFolder, daemon=True).start()
 
     return send_file(pdf_path, as_attachment=True)
+
+
+@app.route('/pdfToWord', methods=['POST'])
+
+def convertToWord():
+    if "file" not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+    
+    file = request.files["file"]
+    
+    try:
+        word_path = convert_pdf_to_word(file)
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except RuntimeError as re:
+        return jsonify({"error": str(re)}), 500
+    
+    # print(word_path)
+    threading.Thread(target=clearUploadFolder, daemon=True).start()
+
+    return send_file(
+        word_path,
+        as_attachment=True,
+        download_name=os.path.basename(word_path),
+        mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
+
 
 if __name__ == "__main__":
     app.run(debug=True)
