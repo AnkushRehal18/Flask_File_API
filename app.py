@@ -1,8 +1,8 @@
-# app.py
 from flask import Flask, request, jsonify, send_file, after_this_request
 from helpers.wordToPdf import convert_word_to_pdf
 from utils.clearUploadFolder import clearUploadFolder
 from helpers.PdfToWord import convert_pdf_to_word
+from helpers.imageToPdf import imageToPdf
 import threading
 import os
 
@@ -47,6 +47,24 @@ def convertToWord():
         mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
 
+
+@app.route("/jpgToPdf", methods=["POST"])
+
+def jpgToPdf():
+    if "image_key" not in request.files:
+        return jsonify({"error": "No image uploaded"}), 400
+    
+    image_file = request.files["image_key"]
+    try:
+        pdf_path = imageToPdf(image_file)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    # message= "Image converted to PDF successfully."
+    threading.Thread(target=clearUploadFolder, daemon=True).start()
+
+    return send_file(pdf_path, as_attachment=True  )
 
 if __name__ == "__main__":
     app.run(debug=True)
